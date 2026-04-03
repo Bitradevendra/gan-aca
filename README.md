@@ -1,8 +1,34 @@
 # gan-aca
 
-`gan-aca` is a StyleGAN2-ADA based project with added local experimentation files for generation, latent exploration, and UI/server work.
+`gan-aca` is a StyleGAN2-ADA based project with additional local tooling for generation, latent exploration, and UI experimentation.
 
-## Install
+## Overview
+
+The repository combines the StyleGAN2-ADA training stack with project-specific scripts, generated outputs, and a lightweight server/UI layer for experimentation.
+
+## Project Structure
+
+```text
+gan-aca/
+|-- training/
+|-- metrics/
+|-- torch_utils/
+|-- dnnlib/
+|-- ui/
+|-- server.py
+|-- generate.py
+|-- train.py
+|-- requirements.txt
+`-- README.md
+```
+
+## Requirements
+
+- Python 3.7+
+- NVIDIA GPU recommended
+- CUDA toolkit compatible with the installed PyTorch build
+
+## Installation
 
 ```bash
 python -m venv .venv
@@ -10,7 +36,7 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-## Use
+## Running The Project
 
 Generate images:
 
@@ -24,8 +50,15 @@ Run the local server:
 python server.py
 ```
 
+Train with your dataset:
+
+```bash
+python train.py --outdir=training-runs --data=path\to\dataset.zip --gpus=1
+```
+
 ## How It Works
 
-- core GAN training and inference come from the StyleGAN2-ADA codebase
-- `training/`, `metrics/`, `torch_utils/`, and `dnnlib/` support training and evaluation
-- local folders like `ui/` and related scripts support project-specific experimentation
+- the StyleGAN2-ADA core handles training and inference
+- `training/`, `metrics/`, `torch_utils/`, and `dnnlib/` support the GAN pipeline
+- `generate.py`, `projector.py`, and `style_mixing.py` provide generation and exploration tools
+- `ui/` and `server.py` support local experimentation workflows
