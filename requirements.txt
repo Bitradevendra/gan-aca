@@ -1,0 +1,55 @@
+# ============================================================
+# StyleGAN2-ADA-PyTorch — requirements.txt
+# ============================================================
+# Install with:
+#   pip install -r requirements.txt
+#
+# NOTE: Install PyTorch SEPARATELY first (match your CUDA version):
+#   pip install torch==1.12.1+cu113 torchvision==0.13.1+cu113 \
+#       --extra-index-url https://download.pytorch.org/whl/cu113
+#
+# Check CUDA version: nvcc --version
+# PyTorch version matrix: https://pytorch.org/get-started/previous-versions/
+# ============================================================
+
+# ── Core Deep Learning ─────────────────────────────────────
+# torch and torchvision are installed separately (CUDA-specific wheels)
+# torch>=1.7.1
+# torchvision>=0.8.2
+
+# ── Image Processing ───────────────────────────────────────
+Pillow>=8.3.1
+imageio>=2.9.0
+imageio-ffmpeg>=0.4.3         # Required by projector.py for .mp4 output
+
+# ── Scientific Computing ───────────────────────────────────
+numpy>=1.19.5,<2.0.0
+scipy>=1.6.3
+
+# ── CLI Framework ──────────────────────────────────────────
+click>=7.1.2
+
+# ── Progress Bars ──────────────────────────────────────────
+tqdm>=4.62.0
+
+# ── Web Server (server.py / Web UI) ────────────────────────
+flask>=2.0.1
+flask-cors>=3.0.10            # Optional but recommended for CORS support
+Werkzeug>=2.0.1               # Flask dependency
+
+# ── Metrics (calc_metrics.py) ──────────────────────────────
+requests>=2.26.0              # For downloading VGG16 and other assets
+
+# ── Optional: Dataset Tools ────────────────────────────────
+# Uncomment if loading LSUN (LMDB) datasets:
+# lmdb>=1.2.1
+# opencv-python>=4.5.3.56
+
+# ── Optional: Video / Animation ─────────────────────────────
+# FFmpeg must be installed separately as a system binary:
+# Windows: https://ffmpeg.org/download.html
+# Then add to PATH: C:\ffmpeg\bin
+
+# ── Development / Debugging (optional) ─────────────────────
+# psutil>=5.8.0               # System resource monitoring
+# matplotlib>=3.4.3           # Plotting loss curves

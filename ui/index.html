@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GAN Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <div class="logo">
+      <span class="logo-icon">✦</span>
+      <span class="logo-text">StyleGAN2<br><small>Studio</small></span>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-btn active" data-tab="generate">
+        <span class="nav-icon">🎲</span> Random Generate
+      </button>
+      <button class="nav-btn" data-tab="stylemix">
+        <span class="nav-icon">🎨</span> Style Mixing
+      </button>
+      <button class="nav-btn" data-tab="discover">
+        <span class="nav-icon">🔍</span> Discover Directions
+      </button>
+      <button class="nav-btn" data-tab="edit">
+        <span class="nav-icon">🎭</span> Latent Edit
+      </button>
+      <button class="nav-btn" data-tab="interpolate">
+        <span class="nav-icon">🎬</span> Interpolate / Morph
+      </button>
+      <button class="nav-btn" data-tab="project">
+        <span class="nav-icon">📸</span> Project Your Image
+      </button>
+      <button class="nav-btn" data-tab="gallery">
+        <span class="nav-icon">🖼️</span> Gallery
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="model-badge">
+        <span class="dot green"></span> network.pkl loaded
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="main">
+
+    <!-- ─── TAB: GENERATE ─── -->
+    <div class="tab active" id="tab-generate">
+      <div class="tab-header">
+        <h1>🎲 Random Image Generation</h1>
+        <p>Generate faces using random seeds. Change seeds to get different faces.</p>
+      </div>
+      <div class="card">
+        <div class="form-grid">
+          <div class="field">
+            <label>Seeds <span class="hint">e.g. 1,2,3 or 0-9</span></label>
+            <input type="text" id="gen-seeds" value="1,2,3,4,5,6" placeholder="1,2,3 or 0-9" />
+          </div>
+          <div class="field">
+            <label>Truncation ψ <span class="hint">0.5=safe · 1.0=diverse</span></label>
+            <div class="slider-row">
+              <input type="range" id="gen-trunc" min="0.3" max="1.0" step="0.05" value="0.7"
+                oninput="syncVal('gen-trunc','gen-trunc-val')" />
+              <span class="slider-val" id="gen-trunc-val">0.7</span>
+            </div>
+          </div>
+          <div class="field">
+            <label>Noise Mode</label>
+            <select id="gen-noise">
+              <option value="const">Const (deterministic)</option>
+              <option value="random">Random (varied)</option>
+              <option value="none">None</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn-primary" onclick="runGenerate()">
+          <span class="btn-icon">▶</span> Generate Images
+        </button>
+      </div>
+      <div id="gen-status" class="status-box hidden"></div>
+      <div id="gen-log" class="log-box hidden"></div>
+      <div id="gen-results" class="image-grid"></div>
+    </div>
+
+    <!-- ─── TAB: STYLE MIX ─── -->
+    <div class="tab" id="tab-stylemix">
+      <div class="tab-header">
+        <h1>🎨 Style Mixing</h1>
+        <p>Mix the style of one face onto another. Rows = base structure · Cols = style source.</p>
+      </div>
+      <div class="card">
+        <div class="form-grid">
+          <div class="field">
+            <label>Row Seeds <span class="hint">structural faces</span></label>
+            <input type="text" id="mix-rows" value="85,100,75,458" placeholder="85,100,75" />
+          </div>
+          <div class="field">
+            <label>Col Seeds <span class="hint">style sources</span></label>
+            <input type="text" id="mix-cols" value="55,821,293" placeholder="55,821,293" />
+          </div>
+          <div class="field">
+            <label>Style Layer Range</label>
+            <select id="mix-styles">
+              <option value="0-6">All Styles (0-6) — Default</option>
+              <option value="0-3">Coarse Only (0-3) — Pose, shape, hair</option>
+              <option value="4-7">Medium Only (4-7) — Features, expression</option>
+              <option value="8-13">Fine Only (8-13) — Color, texture</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Truncation ψ</label>
+            <div class="slider-row">
+              <input type="range" id="mix-trunc" min="0.3" max="1.0" step="0.05" value="0.7"
+                oninput="syncVal('mix-trunc','mix-trunc-val')" />
+              <span class="slider-val" id="mix-trunc-val">0.7</span>
+            </div>
+          </div>
+        </div>
+        <div class="info-chips">
+          <span class="chip">🟦 Layers 0-3 = Pose &amp; shape</span>
+          <span class="chip">🟨 Layers 4-7 = Expression</span>
+          <span class="chip">🟥 Layers 8-13 = Color &amp; skin</span>
+        </div>
+        <button class="btn-primary" onclick="runStyleMix()">
+          <span class="btn-icon">▶</span> Run Style Mix
+        </button>
+      </div>
+      <div id="mix-status" class="status-box hidden"></div>
+      <div id="mix-log" class="log-box hidden"></div>
+      <div id="mix-results" class="image-grid"></div>
+    </div>
+
+    <!-- ─── TAB: DISCOVER ─── -->
+    <div class="tab" id="tab-discover">
+      <div class="tab-header">
+        <h1>🔍 Discover Latent Directions</h1>
+        <p>Find the most impactful edit directions using SeFa analysis. Direction 0 is usually age/pose.</p>
+      </div>
+      <div class="card">
+        <div class="form-grid">
+          <div class="field">
+            <label>Demo Seeds <span class="hint">faces to show on</span></label>
+            <input type="text" id="disc-seeds" value="100,200,300" placeholder="100,200,300" />
+          </div>
+          <div class="field">
+            <label>Num Directions <span class="hint">top N to find</span></label>
+            <input type="number" id="disc-dirs" value="8" min="3" max="20" />
+          </div>
+          <div class="field">
+            <label>Edit Strength</label>
+            <div class="slider-row">
+              <input type="range" id="disc-strength" min="1" max="10" step="0.5" value="4"
+                oninput="syncVal('disc-strength','disc-strength-val')" />
+              <span class="slider-val" id="disc-strength-val">4</span>
+            </div>
+          </div>
+          <div class="field">
+            <label>Steps per Direction</label>
+            <input type="number" id="disc-steps" value="7" min="3" max="15" />
+          </div>
+          <div class="field">
+            <label>Truncation ψ</label>
+            <div class="slider-row">
+              <input type="range" id="disc-trunc" min="0.3" max="1.0" step="0.05" value="0.7"
+                oninput="syncVal('disc-trunc','disc-trunc-val')" />
+              <span class="slider-val" id="disc-trunc-val">0.7</span>
+            </div>
+          </div>
+        </div>
+        <button class="btn-primary" onclick="runDiscover()">
+          <span class="btn-icon">▶</span> Discover Directions
+        </button>
+      </div>
+      <div id="disc-status" class="status-box hidden"></div>
+      <div id="disc-log" class="log-box hidden"></div>
+      <div id="disc-results" class="image-grid"></div>
+    </div>
+
+    <!-- ─── TAB: EDIT ─── -->
+    <div class="tab" id="tab-edit">
+      <div class="tab-header">
+        <h1>🎭 Latent Edit</h1>
+        <p>Apply a discovered direction to a face. Run Discover first to find good direction indices.</p>
+      </div>
+      <div class="card">
+        <div class="form-grid">
+          <div class="field">
+            <label>Seed <span class="hint">face to edit</span></label>
+            <input type="number" id="edit-seed" value="200" min="0" />
+          </div>
+          <div class="field">
+            <label>Direction Index <span class="hint">0 = most impactful</span></label>
+            <input type="number" id="edit-dir" value="0" min="0" max="19" />
+          </div>
+          <div class="field">
+            <label>Strength Range <span class="hint">min,max</span></label>
+            <input type="text" id="edit-strength" value="-5,5" placeholder="-5,5" />
+          </div>
+          <div class="field">
+            <label>Steps</label>
+            <input type="number" id="edit-steps" value="11" min="3" max="25" />
+          </div>
+          <div class="field">
+            <label>Layer Range</label>
+            <select id="edit-layers">
+              <option value="0-7">All (0-7) — Default</option>
+              <option value="0-3">Coarse (0-3) — Pose, shape</option>
+              <option value="4-7">Medium (4-7) — Expression</option>
+              <option value="8-13">Fine (8-13) — Color, texture</option>
+              <option value="0-13">Full (0-13) — Everything</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Truncation ψ</label>
+            <div class="slider-row">
+              <input type="range" id="edit-trunc" min="0.3" max="1.0" step="0.05" value="0.7"
+                oninput="syncVal('edit-trunc','edit-trunc-val')" />
+              <span class="slider-val" id="edit-trunc-val">0.7</span>
+            </div>
+          </div>
+        </div>
+        <button class="btn-primary" onclick="runEdit()">
+          <span class="btn-icon">▶</span> Edit Face
+        </button>
+      </div>
+      <div id="edit-status" class="status-box hidden"></div>
+      <div id="edit-log" class="log-box hidden"></div>
+      <div id="edit-results" class="image-grid"></div>
+    </div>
+
+    <!-- ─── TAB: INTERPOLATE ─── -->
+    <div class="tab" id="tab-interpolate">
+      <div class="tab-header">
+        <h1>🎬 Interpolate / Face Morph</h1>
+        <p>Smoothly morph between two different faces. Generates animation frames.</p>
+      </div>
+      <div class="card">
+        <div class="form-grid">
+          <div class="field">
+            <label>Start Seed</label>
+            <input type="number" id="interp-start" value="100" min="0" />
+          </div>
+          <div class="field">
+            <label>End Seed</label>
+            <input type="number" id="interp-end" value="300" min="0" />
+          </div>
+          <div class="field">
+            <label>Frames <span class="hint">more = smoother</span></label>
+            <input type="number" id="interp-frames" value="20" min="5" max="120" />
+          </div>
+          <div class="field">
+            <label>Mode</label>
+            <select id="interp-mode">
+              <option value="slerp">Slerp (smooth, recommended)</option>
+              <option value="linear">Linear (simpler)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Truncation ψ</label>
+            <div class="slider-row">
+              <input type="range" id="interp-trunc" min="0.3" max="1.0" step="0.05" value="0.7"
+                oninput="syncVal('interp-trunc','interp-trunc-val')" />
+              <span class="slider-val" id="interp-trunc-val">0.7</span>
+            </div>
+          </div>
+          <div class="field field-check">
+            <label>
+              <input type="checkbox" id="interp-loop" />
+              Loop (A → B → A)
+            </label>
+          </div>
+        </div>
+        <button class="btn-primary" onclick="runInterpolate()">
+          <span class="btn-icon">▶</span> Generate Morph Frames
+        </button>
+      </div>
+      <div id="interp-status" class="status-box hidden"></div>
+      <div id="interp-log" class="log-box hidden"></div>
+      <div id="interp-results" class="image-grid"></div>
+    </div>
+
+    <!-- ─── TAB: PROJECT ─── -->
+    <div class="tab" id="tab-project">
+      <div class="tab-header">
+        <h1>📸 Project Your Image</h1>
+        <p>Upload your own photo and encode it into the GAN's latent space.</p>
+      </div>
+      <div class="card">
+        <div class="form-grid">
+          <div class="field" style="grid-column: span 2;">
+            <label>Upload Image</label>
+            <div class="upload-zone" id="upload-zone" onclick="document.getElementById('proj-file').click()">
+              <div id="upload-preview">
+                <span class="upload-icon">📁</span>
+                <p>Click to choose an image<br><small>JPG, PNG — will be auto-resized</small></p>
+              </div>
+              <input type="file" id="proj-file" accept="image/*" style="display:none" onchange="previewUpload(this)" />
+            </div>
+          </div>
+          <div class="field">
+            <label>Optimization Steps <span class="hint">500 = fast · 1000 = accurate</span></label>
+            <input type="number" id="proj-steps" value="500" min="100" max="2000" step="100" />
+          </div>
+        </div>
+        <button class="btn-primary" onclick="runProject()">
+          <span class="btn-icon">▶</span> Project Image
+        </button>
+      </div>
+      <div id="proj-status" class="status-box hidden"></div>
+      <div id="proj-log" class="log-box hidden"></div>
+      <div id="proj-results" class="image-grid"></div>
+    </div>
+
+    <!-- ─── TAB: GALLERY ─── -->
+    <div class="tab" id="tab-gallery">
+      <div class="tab-header">
+        <h1>🖼️ Gallery</h1>
+        <p>Browse all previously generated images.</p>
+      </div>
+      <div class="gallery-tabs">
+        <button class="gtab active" onclick="loadGallery('out', this)">Generated / Projected</button>
+        <button class="gtab" onclick="loadGallery('style_mix', this)">Style Mix</button>
+        <button class="gtab" onclick="loadGallery('latent', this)">Latent Explore</button>
+      </div>
+      <div id="gallery-grid" class="image-grid"></div>
+    </div>
+
+  </main>
+
+  <!-- ===== LIGHTBOX ===== -->
+  <div class="lightbox hidden" id="lightbox" onclick="closeLightbox()">
+    <div class="lb-inner">
+      <img id="lb-img" src="" alt="" />
+      <div id="lb-name" class="lb-name"></div>
+      <button class="lb-close" onclick="closeLightbox()">✕</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>

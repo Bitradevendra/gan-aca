@@ -1,0 +1,12 @@
+__pycache__/
+.cache/
+venv/
+.venv/
+out/
+style_mix_results/
+latent_explore/
+*.pkl
+*.pt
+run_log*.txt
+error_log.txt
+.git_codex_backup_*
